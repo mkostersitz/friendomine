@@ -87,17 +87,17 @@ private:
             app.ToggleChatState();
         });
 
-        // 设置开机按钮的长按事件（直接进入配网模式）
+        // Set long-press event for the boot button (enter Wi-Fi config mode directly)
         boot_button_.OnLongPress([this]() {
-            // 唤醒电源保存定时器
+            // Wake up the power-save timer
             power_save_timer_->WakeUp();
-            // 获取应用程序实例
+            // Get application instance
             auto& app = Application::GetInstance();
             
-            // 进入配网模式
+            // Enter Wi-Fi configuration mode
             app.SetDeviceState(kDeviceStateWifiConfiguring);
             
-            // 重置WiFi配置以确保进入配网模式
+            // Reset Wi-Fi configuration to ensure entering config mode
             ResetWifiConfiguration();
         });
 
@@ -182,12 +182,12 @@ public:
         GetBacklight()->RestoreBrightness();
     }
 
-    // 获取音频编解码器
+    // Get audio codec
     virtual AudioCodec* GetAudioCodec() override {
-        // 静态实例化NoAudioCodecSimplex类
+        // Statically instantiate NoAudioCodecSimplex
         static NoAudioCodecSimplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
             AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_SCK, AUDIO_I2S_MIC_GPIO_WS, AUDIO_I2S_MIC_GPIO_DIN);
-        // 返回音频编解码器
+        // Return the audio codec
         return &audio_codec;
     }
 

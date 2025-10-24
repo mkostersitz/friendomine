@@ -24,7 +24,7 @@ v1 的稳定版本为 1.9.2，可以通过 `git checkout v1` 来切换到 v1 版
 
 - Wi-Fi / ML307 Cat.1 4G
 - 离线语音唤醒 [ESP-SR](https://github.com/espressif/esp-sr)
-- 支持两种通信协议（[Websocket](docs/websocket.md) 或 MQTT+UDP）
+- 支持两种通信协议（[WebSocket](docs/websocket.md) 或 MQTT+UDP）
 - 采用 OPUS 音频编解码
 - 基于流式 ASR + LLM + TTS 架构的语音交互
 - 声纹识别，识别当前说话人的身份 [3D Speaker](https://github.com/modelscope/3D-Speaker)

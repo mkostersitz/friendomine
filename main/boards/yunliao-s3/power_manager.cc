@@ -10,16 +10,16 @@
 #define TAG "PowerManager"
 
 static QueueHandle_t gpio_evt_queue = NULL;
-uint16_t battCnt;//闪灯次数
-int battLife = 70; //电量
+uint16_t battCnt; // number of LED flashes
+int battLife = 70; // battery percentage
 
-// 中断服务程序
+// Interrupt service routine
 static void IRAM_ATTR batt_mon_isr_handler(void* arg) {
     uint32_t gpio_num = (uint32_t) arg;
     xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
 }
 
-// 添加任务处理函数
+// Task handler to count pulses
 static void batt_mon_task(void* arg) {
     uint32_t io_num;
     while(1) {
@@ -30,14 +30,14 @@ static void batt_mon_task(void* arg) {
 }
 
 static void calBattLife() {
-    // 计算电量
+    // Calculate battery percentage
     battLife = battCnt;
 
     if (battLife > 100){
         battLife = 100;
     }
     // ESP_LOGI(TAG, "Battery life:%d", (int)battLife);
-    // 重置计数器
+    // Reset counter
     battCnt = 0;
 }
 
@@ -45,7 +45,7 @@ PowerManager::PowerManager(){
 }
 
 void PowerManager::Initialize(){
-    // 初始化5V控制引脚
+    // Initialize 5V control pin
     gpio_config_t io_conf_5v = {
         .pin_bit_mask = 1<<BOOT_5V_PIN,
         .mode = GPIO_MODE_OUTPUT,
@@ -55,7 +55,7 @@ void PowerManager::Initialize(){
     };
     ESP_ERROR_CHECK(gpio_config(&io_conf_5v));
 
-    // 初始化4G控制引脚
+    // Initialize 4G control pin
     gpio_config_t io_conf_4g = {
         .pin_bit_mask = 1<<BOOT_4G_PIN,
         .mode = GPIO_MODE_OUTPUT,
@@ -65,7 +65,7 @@ void PowerManager::Initialize(){
     };
     ESP_ERROR_CHECK(gpio_config(&io_conf_4g));
 
-    // 电池电量监测引脚配置
+    // Battery level monitor pin configuration
     gpio_config_t io_conf_batt_mon = {
         .pin_bit_mask = 1ull<<MON_BATT_PIN,
         .mode = GPIO_MODE_INPUT,
@@ -74,16 +74,16 @@ void PowerManager::Initialize(){
         .intr_type = GPIO_INTR_POSEDGE,
     };
     ESP_ERROR_CHECK(gpio_config(&io_conf_batt_mon));
-    // 创建电量GPIO事件队列
+    // Create GPIO event queue for battery
     gpio_evt_queue = xQueueCreate(2, sizeof(uint32_t));
-    // 安装电量GPIO ISR服务
+    // Install GPIO ISR service for battery
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
-    // 添加中断处理
+    // Attach interrupt handler
     ESP_ERROR_CHECK(gpio_isr_handler_add(MON_BATT_PIN, batt_mon_isr_handler, (void*)MON_BATT_PIN));
-     // 创建监控任务
+     // Create monitoring task
     xTaskCreate(&batt_mon_task, "batt_mon_task", 1024, NULL, 10, NULL);
 
-    // 初始化监测引脚
+    // Initialize monitor pin (USB insert detection)
     gpio_config_t mon_conf = {};
     mon_conf.pin_bit_mask = 1ULL << MON_USB_PIN;
     mon_conf.mode = GPIO_MODE_INPUT;
@@ -91,7 +91,7 @@ void PowerManager::Initialize(){
     mon_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     gpio_config(&mon_conf);
 
-    // 创建电池电量检查定时器
+    // Create battery-level check timer
     esp_timer_create_args_t timer_args = {
         .callback = [](void* arg) {
             PowerManager* self = static_cast<PowerManager*>(arg);
@@ -159,7 +159,7 @@ void PowerManager::CheckStartup() {
     if(settings1.GetInt("sleep_flag", 0) > 0){
         vTaskDelay(pdMS_TO_TICKS(1000));
         if( gpio_get_level(BOOT_BUTTON_PIN) == 1) {
-            Sleep(); //进入休眠模式
+            Sleep(); // enter deep sleep mode
         }else{
             settings1.SetInt("sleep_flag", 0);
         }

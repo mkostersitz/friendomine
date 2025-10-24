@@ -21,11 +21,11 @@
 #define AUDIO_CODEC_ES8388_ADDR ES8388_CODEC_DEFAULT_ADDR
 
 #define BOOT_BUTTON_PIN         GPIO_NUM_2
-#define BOOT_5V_PIN             GPIO_NUM_3      //5V升压输出
-#define BOOT_4G_PIN             GPIO_NUM_5      //4G模块使能
-#define MON_BATT_PIN            GPIO_NUM_43    	//检测PMU电池指示
-#define MON_BATT_CNT            70    	        //检测PMU电池秒数
-#define MON_USB_PIN				GPIO_NUM_47    	//检测USB插入
+#define BOOT_5V_PIN             GPIO_NUM_3      // 5V boost output
+#define BOOT_4G_PIN             GPIO_NUM_5      // 4G module enable
+#define MON_BATT_PIN            GPIO_NUM_43     // monitor PMU battery indicator
+#define MON_BATT_CNT            70              // seconds to monitor PMU battery
+#define MON_USB_PIN             GPIO_NUM_47     // detect USB insertion
 
 
 #define ML307_RX_PIN            GPIO_NUM_16

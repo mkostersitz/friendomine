@@ -34,7 +34,7 @@ static __always_inline uint8_t expand_6_to_8(uint8_t v) {
 
 static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width, uint16_t height, v4l2_pix_fmt_t format,
                                              jpeg_pixel_format_t* out_fmt, int* out_size) {
-    // 直接支持的格式：GRAY、RGB888、YCbYCr(YUYV)
+    // Directly supported formats: GRAY, RGB888, YCbYCr (YUYV)
     if (format == V4L2_PIX_FMT_GREY) {
         int sz = (int)width * (int)height;
         uint8_t* buf = (uint8_t*)jpeg_calloc_align(sz, 16);
@@ -48,7 +48,7 @@ static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width,
         return buf;
     }
 
-    // V4L2 YUYV (Y Cb Y Cr) 可直接作为 JPEG_PIXEL_FORMAT_YCbYCr 输入
+    // V4L2 YUYV (Y Cb Y Cr) can be used directly as JPEG_PIXEL_FORMAT_YCbYCr input
     if (format == V4L2_PIX_FMT_YUYV) {
         int sz = (int)width * (int)height * 2;
         uint8_t* buf = (uint8_t*)jpeg_calloc_align(sz, 16);
@@ -62,7 +62,7 @@ static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width,
         return buf;
     }
 
-    // V4L2 UYVY (Cb Y Cr Y) -> 重排为 YUYV 再作为 YCbYCr 输入
+    // V4L2 UYVY (Cb Y Cr Y) -> reorder to YUYV, then feed as YCbYCr input
     if (format == V4L2_PIX_FMT_UYVY) {
         int sz = (int)width * (int)height * 2;
         const uint8_t* s = src;
@@ -86,7 +86,7 @@ static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width,
         return buf;
     }
 
-    // V4L2 YUV422P (YUV422 Planar) -> 重排为 YUYV (YCbYCr)
+    // V4L2 YUV422P (YUV422 Planar) -> repack as YUYV (YCbYCr)
     if (format == V4L2_PIX_FMT_YUV422P) {
         int sz = (int)width * (int)height * 2;
         const uint8_t* y_plane = src;
@@ -119,23 +119,23 @@ static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width,
         return buf;
     }
 
-    // 其余格式转换为 RGB888
+    // Convert remaining formats to RGB888
     int rgb_size = (int)width * (int)height * 3;
     uint8_t* rgb = (uint8_t*)jpeg_calloc_align(rgb_size, 16);
     if (!rgb)
         return NULL;
 
     if (format == V4L2_PIX_FMT_RGB24) {
-        // V4L2_RGB24 即 RGB888
+    // V4L2_RGB24 is RGB888
         memcpy(rgb, src, rgb_size);
     } else if (format == V4L2_PIX_FMT_RGB565) {
-        // RGB565 小端，需要转换为 RGB888
+    // RGB565 little-endian; convert to RGB888
         const uint8_t* p = src;
         uint8_t* d = rgb;
         int pixels = (int)width * (int)height;
         for (int i = 0; i < pixels; i++) {
-            uint8_t lo = p[0];  // 低字节（LSB）
-            uint8_t hi = p[1];  // 高字节（MSB）
+            uint8_t lo = p[0];  // low byte (LSB)
+            uint8_t hi = p[1];  // high byte (MSB)
             p += 2;
 
             uint8_t r5 = (hi >> 3) & 0x1F;
@@ -148,7 +148,7 @@ static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width,
             d += 3;
         }
     } else {
-        // 其他未覆盖格式，清零
+    // Other unsupported formats: zero-fill
         memset(rgb, 0, rgb_size);
     }
 
@@ -223,7 +223,7 @@ static uint8_t* convert_input_to_hw_encoder_buf(const uint8_t* src, uint16_t wid
     }
 
     if (format == V4L2_PIX_FMT_YUYV) {
-        // 硬件需要 | Y1 V Y0 U | 的“大端”格式，因此需要 bswap16
+    // Hardware expects | Y1 V Y0 U | in a "big-endian" ordering; bswap16 is required
         int sz = (int)width * (int)height * 2;
         uint16_t* buf = (uint16_t*)malloc_psram(sz);
         if (!buf)
@@ -347,7 +347,7 @@ static bool encode_with_esp_new_jpeg(const uint8_t* src, size_t src_len, uint16_
         return false;
     }
 
-    // 估算输出缓冲区：宽高的 1.5 倍 + 64KB
+    // Estimate output buffer size: width * height * 1.5 + 64KB
     size_t out_cap = (size_t)width * (size_t)height * 3 / 2 + 64 * 1024;
     if (out_cap < 128 * 1024)
         out_cap = 128 * 1024;
@@ -372,7 +372,7 @@ static bool encode_with_esp_new_jpeg(const uint8_t* src, size_t src_len, uint16_
 
     if (cb) {
         cb(cb_arg, 0, outbuf, (size_t)out_len);
-        cb(cb_arg, 1, NULL, 0);  // 结束信号
+    cb(cb_arg, 1, NULL, 0);  // end marker
         free(outbuf);
         if (jpg_out)
             *jpg_out = NULL;

@@ -123,7 +123,7 @@ void Application::CheckAssetsVersion() {
 void Application::CheckNewVersion(Ota& ota) {
     const int MAX_RETRY = 10;
     int retry_count = 0;
-    int retry_delay = 10; // 初始重试延迟为10秒
+    int retry_delay = 10; // Initial retry delay is 10 seconds
 
     auto& board = Board::GetInstance();
     while (true) {
@@ -149,11 +149,11 @@ void Application::CheckNewVersion(Ota& ota) {
                     break;
                 }
             }
-            retry_delay *= 2; // 每次重试后延迟时间翻倍
+            retry_delay *= 2; // Double the delay after each retry
             continue;
         }
         retry_count = 0;
-        retry_delay = 10; // 重置重试延迟时间
+        retry_delay = 10; // Reset retry delay
 
         if (ota.HasNewVersion()) {
             if (UpgradeFirmware(ota)) {

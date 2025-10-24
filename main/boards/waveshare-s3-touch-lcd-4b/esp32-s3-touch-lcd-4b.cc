@@ -376,7 +376,8 @@ public:
         InitializeTouch();
         InitializeButtons();
         InitializeTools();
-        InitializeKeyMonitor();  // 启动按键监听
+        InitializeKeyMonitor();  // Start key monitoring
+    }
         GetBacklight()->SetBrightness(100);
     }
 
